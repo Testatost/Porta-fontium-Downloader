@@ -3,6 +3,35 @@ File-Downloader for Porta fontium 🇩🇪 🇬🇧 🇨🇿
 
 ![alt text](https://github.com/Testatost/Porta-Fontium-Downloader/blob/main/Porta%20fontium%20Downloader.png?raw=true)
 
+# 🚀 Installation
+
+## Voraussetzungen
+- **Python 3.10+**  
+- Linux Mint, Ubuntu oder Windows  
+- Abhängigkeiten:  
+  - `requests`
+  - `beautifulsoup4`
+  - `pillow`
+  - `reportlab` (optional, für PDF-Export)
+  - `tkinter` (unter Linux extra installieren)
+
+---
+
+# 📦 Abhängigkeiten installieren
+
+## 👉 Linux Mint / Ubuntu
+```md
+sudo apt update
+```
+```md
+sudo apt install python3-tk python3-pip
+```
+## 👉 in Pycharm
+```md
+pip install requests beautifulsoup4 pillow reportlab
+```
+
+
 # 🇩🇪 Deutsch
 
 ## 🔑 Hauptaufgabe
@@ -102,5 +131,21 @@ File-Downloader for Porta fontium 🇩🇪 🇬🇧 🇨🇿
 
 Disclaimer: This code was made with ChatGPT 5.
 
+
+------------------------------------------------------------------------------------------------------------------------
+
 Update 1.1
 -individuelle Dateinnamen (heruntergeladene Dateien haben nun einen individuellen Namen von dem Verzeichnis aus dem sie herstammen)
+
+------------------------------------------------------------------------------------------------------------------------
+
+Update 1.2
+-changed the structure of the pathes for the downloaded files
+```md
+📂 Ort-Misto-Place/
+└── 📂 Geburtsmatrik-Matrika_narozených-Birth_register_1780-1795/
+    ├── 🖼️ Geburtsmatrik_Matrika_narozených_Birth_register_0001.jpg
+    ├── 🖼️ Geburtsmatrik_Matrika_narozených_Birth_register_0002.jpg
+    ├── 📄 metadata.txt
+    └── 📄 Geburtsmatrik-Matrika_narozených-Birth_register_1780-1795.pdf
+```
