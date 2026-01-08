@@ -9,7 +9,17 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, parse_qs
 import webbrowser
 from datetime import datetime
+import certifi
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 import xml.etree.ElementTree as ET
+
+# --- SSL Fix: nutze System-Zertifikate (Windows/macOS/Linux) ---
+try:
+    import pip_system_certs.wrapt_requests  # patcht requests automatisch
+except Exception:
+    pass
 
 # Versuche ReportLab für PDF-Export zu laden
 try:
@@ -227,13 +237,21 @@ def is_porta_fontium(url: str) -> bool:
 
 
 def fetch_html(url, session):
-    r = session.get(url, timeout=20)
+    # PortaFontium: SSL-Verifikation abschalten (Zertifikatskette defekt / Proxy)
+    verify = not is_porta_fontium(url)
+
+    r = session.get(url, timeout=20, verify=verify)
     r.raise_for_status()
     return r.text
 
 
 def find_iip_links(html, base_url):
     soup = BeautifulSoup(html, "html.parser")
+    # --- NEW: IIIF manifest (moderne Porta Fontium Seiten) ---
+    m = re.search(r'https://[^"\']+/iiif/.+?/manifest', html)
+    if m:
+        return [m.group(0)]
+
 
     # 1) GDA IIIF image detection (Porta Fontium Foto pages)
     m = re.search(r'https://www\.gda\.bayern\.de/digitalisat/(?:iiif|jpeg)/[^"\s]+', html)
@@ -278,6 +296,9 @@ def extract_dfg_images(url):
 
 
 def build_download_url(iip_url):
+    # IIIF v2/v3 full image
+    if "/iiif/" in iip_url and "/manifest" not in iip_url:
+        return iip_url.rstrip("/") + "/full/full/0/default.jpg"
     parsed = urlparse(iip_url)
     qs = parse_qs(parsed.query)
     fif = qs.get("FIF", [None])[0]
@@ -518,7 +539,8 @@ def parse_generic_metadata(html: str, url: str) -> dict:
 def download_image(url, path, session, retries=3):
     for attempt in range(retries):
         try:
-            r = session.get(url, stream=True, timeout=60)
+            verify = not is_porta_fontium(url)
+            r = session.get(url, stream=True, timeout=60, verify=verify)
             r.raise_for_status()
             with open(path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=8192):
@@ -888,7 +910,11 @@ class DownloaderGUI:
             webbrowser.open(values[0])
 
     def choose_dir(self):
-        d = filedialog.askdirectory()
+        start_dir = self.outdir_entry.get() or os.getcwd()
+        d = filedialog.askdirectory(
+            initialdir=start_dir,
+            title=LANG[self.lang]["choose_dir"]
+        )
         if d:
             self.outdir_entry.delete(0, "end")
             self.outdir_entry.insert(0, d)

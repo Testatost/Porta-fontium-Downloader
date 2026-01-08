@@ -28,7 +28,7 @@ sudo apt install python3-tk python3-pip
 ```
 ## 👉 in Pycharm
 ```md
-pip install requests beautifulsoup4 pillow reportlab
+pip install requests beautifulsoup4 pillow reportlab certifi pip-system-certs
 ```
 
 
