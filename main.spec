@@ -1,5 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from pathlib import Path
+
 from PyInstaller.utils.hooks import collect_submodules
 from PyInstaller.utils.win32.versioninfo import (
     VSVersionInfo,
@@ -13,12 +15,36 @@ from PyInstaller.utils.win32.versioninfo import (
 
 block_cipher = None
 
+PROJECT_ROOT = Path.cwd()
+APP_NAME = "Porta fontium Downloader"
+
 hiddenimports = collect_submodules("pfdownloader")
+
+datas = []
+for filename in (
+    "icon.ico",
+    "icon.png",
+    "logo.png",
+    "banner.png",
+    "banner.jpg",
+    "banner.jpeg",
+    "header.png",
+):
+    path = PROJECT_ROOT / filename
+    if path.exists():
+        datas.append((str(path), "."))
+
+icon_file = None
+for candidate in ("icon.ico", "icon.png", "logo.png"):
+    candidate_path = PROJECT_ROOT / candidate
+    if candidate_path.exists():
+        icon_file = str(candidate_path)
+        break
 
 version_info = VSVersionInfo(
     ffi=FixedFileInfo(
-        filevers=(1, 5, 0, 0),
-        prodvers=(1, 5, 0, 0),
+        filevers=(1, 6, 0, 0),
+        prodvers=(1, 6, 0, 0),
         mask=0x3F,
         flags=0x0,
         OS=0x40004,
@@ -33,12 +59,12 @@ version_info = VSVersionInfo(
                     "040704B0",
                     [
                         StringStruct("CompanyName", "Sebastian (Testatost)"),
-                        StringStruct("FileDescription", "Porta fontium Downloader - Sebastian (Testatost)"),
-                        StringStruct("FileVersion", "1.5"),
+                        StringStruct("FileDescription", "Porta fontium Downloader"),
+                        StringStruct("FileVersion", "1.6.0.0"),
                         StringStruct("InternalName", "Porta fontium Downloader"),
                         StringStruct("OriginalFilename", "Porta fontium Downloader.exe"),
                         StringStruct("ProductName", "Porta fontium Downloader"),
-                        StringStruct("ProductVersion", "1.5"),
+                        StringStruct("ProductVersion", "1.6.0.0"),
                         StringStruct("Comments", "Written by Sebastian (Testatost)"),
                     ],
                 )
@@ -48,16 +74,11 @@ version_info = VSVersionInfo(
     ],
 )
 
-
 a = Analysis(
     ["main.py"],
-    pathex=["."],
+    pathex=[str(PROJECT_ROOT)],
     binaries=[],
-    datas=[
-        ("icon.ico", "."),
-        ("icon.png", "."),
-        ("logo.png", "."),
-    ],
+    datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
@@ -74,11 +95,11 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name="Porta fontium Downloader",
+    name=APP_NAME,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
@@ -87,6 +108,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="icon.ico",
+    icon=icon_file,
     version=version_info,
 )

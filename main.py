@@ -15,7 +15,17 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName(APP_DISPLAY_NAME)
     app.setApplicationDisplayName(APP_DISPLAY_NAME)
-    app.setStyle(QStyleFactory.create("Fusion"))
+
+    if sys.platform.startswith("win"):
+        for style_name in ("windowsvista", "WindowsVista", "windows11", "Windows11", "windows", "Windows", "Fusion"):
+            style = QStyleFactory.create(style_name)
+            if style:
+                app.setStyle(style)
+                break
+    else:
+        style = QStyleFactory.create("Fusion")
+        if style:
+            app.setStyle(style)
 
     app_icon = get_app_icon()
     if not app_icon.isNull():
