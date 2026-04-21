@@ -11,6 +11,8 @@ The application is written in **Python** with **PySide6** and organized as a mod
 
 Version **1.6** adds a larger multilingual UI, a more flexible queue workflow, persistent user settings, URL history management, platform-specific UI adjustments, and improved source handling for non-Porta scan viewers.
 
+  ![Screenshot](Screenshot.png)
+
 ## Main features
 
 - open supported scan URLs from **portafontium.eu**
