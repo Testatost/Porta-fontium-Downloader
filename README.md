@@ -8,7 +8,7 @@ Porta fontium Downloader is a desktop application for downloading scans from **p
 
 The current source code is based on **PySide6** and is now organized as a modular package in `pfdownloader/`.
 
-![Screenshot](https://github.com/Testatost/Porta-Fontium-Downloader/blob/main/Screenshot.png?raw=true)
+![Screenshot](banner.png)
 
 ## Overview
 
