@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import re
+import os
 from urllib.parse import parse_qs, urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
 from pfdownloader.porta_logic import is_porta_fontium
+from pfdownloader.deepzoom import extract_deepzoom_links, is_deepzoom
 
 
 def fetch_html(url: str, session: requests.Session) -> tuple[str, str]:
@@ -29,6 +31,10 @@ def extract_dfg_images(url: str) -> list[str]:
 
 def find_iip_links(html: str, base_url: str) -> list[str]:
     soup = BeautifulSoup(html, "html.parser")
+
+    deepzoom_links = extract_deepzoom_links(html, base_url)
+    if deepzoom_links:
+        return deepzoom_links
 
     manifest = re.search(r'https://[^"\']+/iiif/.+?/manifest', html)
     if manifest:
@@ -57,6 +63,8 @@ def find_iip_links(html: str, base_url: str) -> list[str]:
 
 
 def build_download_url(iip_url: str) -> str:
+    if is_deepzoom(iip_url):
+        return iip_url
     if "/iiif/" in iip_url and "/manifest" not in iip_url:
         return iip_url.rstrip("/") + "/full/full/0/default.jpg"
 
@@ -76,12 +84,18 @@ def download_image(url: str, path: str, session: requests.Session, retries: int 
             verify = not is_porta_fontium(url)
             response = session.get(url, stream=True, timeout=60, verify=verify)
             response.raise_for_status()
-            with open(path, "wb") as handle:
+            content_type = response.headers.get("Content-Type", "").lower()
+            if "text/html" in content_type or "application/json" in content_type:
+                raise ValueError("Server liefert eine Webseite statt eines Bildes")
+            with open(path + ".part", "wb") as handle:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         handle.write(chunk)
+            os.replace(path + ".part", path)
             return True
         except Exception:
+            if os.path.exists(path + ".part"):
+                os.remove(path + ".part")
             if attempt == retries - 1:
                 return False
     return False

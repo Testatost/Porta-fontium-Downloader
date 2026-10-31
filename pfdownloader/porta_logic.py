@@ -3,12 +3,13 @@ from __future__ import annotations
 import re
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
+from pfdownloader.i18n import WEBSITE_LANGUAGE_MAP
 from pfdownloader.metadata_patterns import CATEGORY_LABELS, REGISTER_CODE_PATTERNS, TYPE_PATTERNS
 from pfdownloader.text_utils import normalize_text, sanitize_name
 
 
 def get_localized_label(item: dict, lang: str) -> str:
-    return str(item.get(lang) or item.get("de") or "").strip()
+    return str(item.get(lang) or item.get("en") or item.get("de") or "").strip()
 
 
 def is_porta_fontium(url: str) -> bool:
@@ -19,7 +20,9 @@ def localize_porta_fontium_url(url: str, lang: str) -> str:
     if not is_porta_fontium(url):
         return url
 
-    preferred_lang = lang if lang in {"de", "cs"} else "de"
+    preferred_lang = str(lang or "de").strip().lower()
+    preferred_lang = WEBSITE_LANGUAGE_MAP.get(preferred_lang, "en")
+
     parsed = urlparse(url)
     params = [(key, value) for key, value in parse_qsl(parsed.query, keep_blank_values=True) if key != "language"]
     params.append(("language", preferred_lang))
@@ -120,7 +123,7 @@ def infer_display_type(meta: dict, url: str, ui_lang: str) -> str:
 
 
 def get_ui_type_name(meta: dict, ui_lang: str) -> str:
-    lang_key = {"de": "type_de", "en": "type_en", "cs": "type_cz"}.get(ui_lang, "type_de")
+    lang_key = {"de": "type_de", "en": "type_en", "cs": "type_cz", "cz": "type_cz"}.get(ui_lang, "type_en")
     localized = str(meta.get(lang_key) or "").strip()
     if localized:
         return localized
@@ -138,7 +141,31 @@ def get_ui_type_name(meta: dict, ui_lang: str) -> str:
     if fallback:
         return fallback
 
-    return {"de": "Dokument", "en": "Document", "cs": "Dokument"}.get(ui_lang, "Dokument")
+    return {
+        "de": "Dokument",
+        "en": "Document",
+        "cs": "Dokument",
+        "cz": "Dokument",
+        "pl": "Dokument",
+        "it": "Documento",
+        "fr": "Document",
+        "es": "Documento",
+        "nl": "Document",
+        "hu": "Dokumentum",
+        "sk": "Dokument",
+        "si": "Dokument",
+        "hr": "Dokument",
+        "ro": "Document",
+        "la": "Documentum",
+        "da": "Dokument",
+        "sv": "Dokument",
+        "no": "Dokument",
+        "fi": "Asiakirja",
+        "is": "Skjal",
+        "et": "Dokument",
+        "lv": "Dokuments",
+        "lt": "Dokumentas",
+    }.get(ui_lang, "Document")
 
 
 def looks_like_porta_navigation_text(text: str) -> bool:
